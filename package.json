@@ -1,0 +1,26 @@
+{
+  "name": "auth-api",
+  "version": "1.0.0",
+  "description": "authentication service with node.js & express",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pinkgorilla/auth-api.git"
+  },
+  "author": "Tris Setiawan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pinkgorilla/auth-api/issues"
+  },
+  "homepage": "https://github.com/pinkgorilla/auth-api#readme",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "jsonwebtoken": "^6.1.0",
+    "mongodb": "^2.1.18",
+    "morgan": "^1.7.0"
+  }
+}
