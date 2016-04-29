@@ -13,7 +13,7 @@ mongoclient.connect(config.connectionString, function (error, db) {
         console.log(error);
     else {
 
-        var accountrouter = require('./app/routers/accounts-router');
+        var accountsrouter = require('./app/routers/accounts-router');
         var authenticationrouter = require('./app/routers/authentication-router');
         var cors = require('./app/middlewares/cors');
         var dbwrapper = require('./app/middlewares/db-wrapper');
@@ -27,9 +27,12 @@ mongoclient.connect(config.connectionString, function (error, db) {
         app.get('/', function (req, res) {
             res.send('Hello! The API is at http://localhost:' + port + '/api');
         });
+        app.get('/config', function (req, res) {
+            res.json(config);
+        });
         app.use('/authenticate', authenticationrouter);
 
-        app.use('/users', accountrouter);
+        app.use('/accounts', accountsrouter);
 
         app.use(function (request, response, next) {
             var apiVersion = response.locals.apiVersion;

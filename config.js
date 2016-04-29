@@ -9,12 +9,14 @@ var connectionString = "mongodb://" + ENV_DB_USER + ":" + ENV_DB_PASS + "@" + EN
 if (process.env.NODE_ENV == "production") {
     module.exports = {
         "secret": ENV_AUTH_SECRET,//"23783350655efe9951cc2104e6a597f1",
-        "connectionString": connectionString//"mongodb://tris:Standar123@ds017231.mlab.com:17231/auth"
+        "connectionString": connectionString,//"mongodb://tris:Standar123@ds017231.mlab.com:17231/auth",
+        "env": process.env
     }
 }
 else {
     module.exports = {
         "secret": "23783350655efe9951cc2104e6a597f1",
-        "connectionString": "mongodb://tris:Standar123@ds017231.mlab.com:17231/auth"
+        "connectionString": "mongodb://tris:Standar123@ds017231.mlab.com:17231/auth",
+        "env": process.env
     }
 }
