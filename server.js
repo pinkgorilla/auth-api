@@ -5,11 +5,7 @@ var morgan = require('morgan');
 var mongodb = require('mongodb');
 var mongoclient = mongodb.MongoClient;
 
-var jwt = require('jsonwebtoken');
 var config = require('./config');
-var user = require('./app/models/user');
-
-
 var port = process.env.PORT || 8080;
 
 mongoclient.connect(config.connectionString, function (error, db) {
@@ -17,7 +13,8 @@ mongoclient.connect(config.connectionString, function (error, db) {
         console.log(error);
     else {
 
-        var userrouter = require('./app/routers/users-router');
+        var accountrouter = require('./app/routers/accounts-router');
+        var authenticationrouter = require('./app/routers/authentication-router');
         var cors = require('./app/middlewares/cors');
         var dbwrapper = require('./app/middlewares/db-wrapper');
 
@@ -30,7 +27,10 @@ mongoclient.connect(config.connectionString, function (error, db) {
         app.get('/', function (req, res) {
             res.send('Hello! The API is at http://localhost:' + port + '/api');
         });
-        app.use('/users', userrouter);
+        app.use('/authenticate', authenticationrouter);
+
+        app.use('/users', accountrouter);
+
         app.use(function (request, response, next) {
             var apiVersion = response.locals.apiVersion;
             var data = response.locals.data;
@@ -39,6 +39,7 @@ mongoclient.connect(config.connectionString, function (error, db) {
                 'data': data
             });
         });
+        
         app.use(function (error, request, response, next) {
             var apiVersion = response.locals.apiVersion;
             var data = response.locals.data;

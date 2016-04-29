@@ -1,12 +1,12 @@
 'use strict'
 
 var Service = require('./service');
-var User = require('../models/user');
+var Account = require('capital-models').identity.Account;
 
-module.exports = class UsersService extends Service {
+module.exports = class AccountService extends Service {
   constructor() {
     super("1.0.0");
-    this.collectionName = "users";
+    this.collectionName = "accounts";
   }  
   
   all(request, response, next) {
