@@ -5,6 +5,7 @@ var Account = require('capital-models').identity.Account;
 var map = require('capital-models').map;
 var jwt = require('jsonwebtoken');
 var config = require('../../config');
+var AccountManager = require('../managers/account-manager');
 
 module.exports = class AuthenticationService extends Service {
     constructor() {
@@ -13,33 +14,20 @@ module.exports = class AuthenticationService extends Service {
 
     authenticate(request, response, next) {
         var username = request.body.username;
+        var password = request.body.password;
         var query = { username: username };
-
-        request.single(map.identity.account, query)
-            .then(account => {
-                if (!account) {
-                    reponse.locals.data = { success: false, message: "Authentication failed. Account not found" };
+        var accountManager = new AccountManager(request.db);
+        accountManager.get(username)
+            .then(user => {
+                if (user.password == password) {
+                    var tokenOption = {};//{ expiresInMinutes: 1440 };
+                    var token = jwt.sign(user, config.secret, tokenOption);
+                    response.locals.data = { success: true, token: token }
                     next();
                 }
-                else if (account) {
-                    if (account.password != request.body.password) {
-                        reponse.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
-                        next();
-                    }
-                    else {
-                        var loadProfile = request.single(map.identity.userProfile, { accountId: account._id });
-                        var loadInfo = request.single(map.identity.userOrganizationInfo, { accountId: account._id });
-                        Promise.all([loadProfile, loadInfo])
-                            .then(results => {
-
-                                var tokenOption = {};//{ expiresInMinutes: 1440 };
-                                var data = Object.assign({}, results[1], results[0], account);
-                                var token = jwt.sign(data, config.secret, tokenOption);
-                                response.locals.data = { success: true, token: token }
-                                next();
-                            })
-                            .catch(e => next(e));
-                    }
+                else {
+                    reponse.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
+                    next();
                 }
             })
             .catch(e => next(e));

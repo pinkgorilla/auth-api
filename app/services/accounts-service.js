@@ -6,6 +6,7 @@ var UserProfile = require('capital-models').identity.UserProfile;
 var UserOrganizationInfo = require('capital-models').identity.UserOrganizationInfo;
 var map = require('capital-models').map;
 var ObjectId = require('mongodb').ObjectId;
+var AccountManager = require('../managers/account-manager');
 
 module.exports = class AccountService extends Service {
   constructor() {
@@ -14,49 +15,24 @@ module.exports = class AccountService extends Service {
   }
 
   all(request, response, next) {
-    var collection = request.db.collection(this.collectionName);
-    collection.find().toArray()
-      .then(docs => {
-        var promises = [];
-        for (var doc of docs) {
-          promises.push(new Promise(function (resolve, reject) {
-            var account = doc;
-            var loadProfile = request.single(map.identity.userProfile, { accountId: new ObjectId(account._id) });
-            var loadInfo = request.single(map.identity.userOrganizationInfo, { accountId: new ObjectId(account._id) });
 
-            Promise.all([loadProfile, loadInfo])
-              .then(results => {
-                resolve(Object.assign({}, results[0], results[1], account));
-              })
-              .catch(e => reject(e))
-          }));
-        }
-
-        Promise.all(promises)
-          .then(results => {
-            response.locals.data = results;
-            next();
-          })
-          .catch(e => next(e));
+    var accountManager = new AccountManager(request.db);
+    accountManager.read()
+      .then(result => {
+        response.locals.data = result;
+        next();
       })
       .catch(e => next(e));
   }
 
   get(request, response, next) {
-    var username = request.params.username;
-    var query = { username: username };
-
-    request.single(this.collectionName, query)
-      .then(doc => {
-
-        var loadProfile = request.single(map.identity.userProfile, { accountId: new ObjectId(doc._id) });
-        var loadInfo = request.single(map.identity.userOrganizationInfo, { accountId: new ObjectId(doc._id) });
-        Promise.all([loadProfile, loadInfo])
-          .then(results => {
-            response.locals.data = Object.assign({}, results[0], results[1], doc);
-            next();
-          })
-          .catch(e => next(e));
+    var username = request.params.username; 
+    
+    var accountManager = new AccountManager(request.db);
+    accountManager.get(username)
+      .then(result => {
+        response.locals.data = result;
+        next();
       })
       .catch(e => next(e));
   }
@@ -67,28 +43,11 @@ module.exports = class AccountService extends Service {
     var profile = Object.assign(new UserProfile(), body.profile);
     var info = Object.assign(new UserOrganizationInfo(), body.info);
 
-    var accountCollection = request.db.collection(map.identity.account);
-    profile.dob = profile.dob ? new Date(profile.dob) : new Date();
-    account.stamp('actor', 'agent');
-    profile.stamp('actor', 'agent');
-    info.stamp('actor', 'agent');
-
-    request.insert(map.identity.account, account)
-      .then(accountResult => {
-        profile.accountId = accountResult._id;
-        info.accountId = accountResult._id;
-
-        var insertProfile = request.insert(map.identity.userProfile, profile);
-        var insertInfo = request.insert(map.identity.userOrganizationInfo, info);
-
-        Promise.all([insertProfile, insertInfo])
-          .then(results => {
-            var data = Object.assign({}, results[1], results[0], accountResult);
-            data._id = accountResult._id;
-            response.locals.data = data;
-            next();
-          })
-          .catch(e => next(e))
+    var accountManager = new AccountManager(request.db);
+    accountManager.create(account, profile, info)
+      .then(result => {
+        response.locals.data = result;
+        next();
       })
       .catch(e => next(e));
   }
@@ -99,31 +58,11 @@ module.exports = class AccountService extends Service {
     var profile = Object.assign(new UserProfile(), body.profile);
     var info = Object.assign(new UserOrganizationInfo(), body.info);
 
-    var query = { 'username': account.username };
-    request.update(map.identity.account, query, account, true)
-      .then(accountResult => {
-        var updateProfile = new Promise(function (resolve, reject) { resolve(null) });
-        var updateInfo = new Promise(function (resolve, reject) { resolve(null) });
-        if (profile && profile.accountId == accountResult._id) {
-          delete (profile._id);
-          profile.accountId = accountResult._id;
-          updateProfile = request.update(map.identity.userProfile, { accountId: accountResult._id }, profile, true)
-        }
-        if (info && info.accountId == accountResult._id) {
-          delete (info._id);
-          info.accountId = accountResult._id;
-          updateInfo = request.update(map.identity.userOrganizationInfo, { accountId: accountResult._id }, info, true)
-        }
-
-        Promise.all([updateProfile, updateInfo])
-          .then(results => {
-
-            var data = Object.assign({}, results[1], results[0], accountResult);
-            data._id = accountResult._id;
-            response.locals.data = data;
-            next();
-          })
-          .catch(e => next(e));
+    var accountManager = new AccountManager(request.db);
+    accountManager.update(account, profile, info)
+      .then(result => {
+        response.locals.data = result;
+        next();
       })
       .catch(e => next(e));
   }
