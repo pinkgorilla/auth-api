@@ -9,76 +9,74 @@ module.exports = class AccountManager extends Manager {
     constructor(db) {
         super(db);
     }
-    
-    get(username)
-    {
-        return new Promise(function(resolve, reject){
-            
-        var query = { username: username};
-            
-        this.dbSingle(map.identity.account, query)
-            .then(account => {                 
-                var loadProfile = this.dbSingle(map.identity.userProfile, { accountId: account._id });
-                var loadInfo = this.dbSingle(map.identity.userOrganizationInfo, { accountId: account._id });
-                Promise.all([loadProfile, loadInfo])
-                    .then(results => {
-                        var data = Object.assign({}, results[1], results[0], account);
-                        resolve(data); 
-                    })
-                    .catch(e => reject(e));
-            })
-            .catch(e => reject(e));
-        }.bind(this));
-    }
-    
-    read()
-    {
-        return new Promise(function(resolve, reject){
-            
-        var collection = this.db.collection(map.identity.account);
-        collection.find().toArray()
-        .then(docs => {
-            var promises = [];
-            for (var doc of docs) {
-            promises.push(new Promise(function (resolve, reject) {
-                var account = doc;
-                var loadProfile = this.dbSingle(map.identity.userProfile, { accountId: new ObjectId(account._id) });
-                var loadInfo = this.dbSingle(map.identity.userOrganizationInfo, { accountId: new ObjectId(account._id) });
 
-                Promise.all([loadProfile, loadInfo])
-                .then(results => {
-                    resolve(Object.assign({}, results[0], results[1], account));
+    read() {
+        return new Promise(function (resolve, reject) {
+
+            var collection = this.db.collection(map.identity.account);
+            collection.find().toArray()
+                .then(docs => {
+                    var promises = [];
+                    for (var doc of docs) {
+                        promises.push(new Promise(function (resolve, reject) {
+                            var account = doc;
+                            var loadProfile = this.dbSingle(map.identity.userProfile, { accountId: new ObjectId(account._id) });
+                            var loadInfo = this.dbSingle(map.identity.userOrganizationInfo, { accountId: new ObjectId(account._id) });
+
+                            Promise.all([loadProfile, loadInfo])
+                                .then(results => {
+                                    resolve(Object.assign({}, results[0], results[1], account));
+                                })
+                                .catch(e => reject(e))
+                        }.bind(this)));
+                    }
+
+                    Promise.all(promises)
+                        .then(results => {
+                            resolve(results);
+                        })
+                        .catch(e => reject(e));
                 })
-                .catch(e => reject(e))
-            }.bind(this)));
-            }
+                .catch(e => reject(e));
 
-            Promise.all(promises)
-            .then(results => {
-                resolve(results);
-            })
-            .catch(e => reject(e));
-        })
-        .catch(e => reject(e));
-            
         }.bind(this));
     }
+    
+    get(username) {
+        return new Promise(function (resolve, reject) {
+
+            var query = { username: username };
+
+            this.dbSingle(map.identity.account, query)
+                .then(account => {
+                    var loadProfile = this.dbSingle(map.identity.userProfile, { accountId: account._id });
+                    var loadInfo = this.dbSingle(map.identity.userOrganizationInfo, { accountId: account._id });
+                    Promise.all([loadProfile, loadInfo])
+                        .then(results => {
+                            var data = Object.assign({}, results[1], results[0], account);
+                            resolve(data);
+                        })
+                        .catch(e => reject(e));
+                })
+                .catch(e => reject(e));
+        }.bind(this));
+    } 
+    
     create(account, profile, info) {
         return new Promise(function (resolve, reject) {
 
-            var accountCollection = this.db.collection(map.identity.account);
+            ;
             profile.dob = profile.dob ? new Date(profile.dob) : new Date();
             account.stamp('actor', 'agent');
             profile.stamp('actor', 'agent');
             info.stamp('actor', 'agent');
-
-            this.dbInsert(map.identity.account, account)
+            this.dbInsert(map.identity.account, account, { username: 1 })
                 .then(accountResult => {
                     profile.accountId = accountResult._id;
                     info.accountId = accountResult._id;
 
-                    var insertProfile = this.dbInsert(map.identity.userProfile, profile);
-                    var insertInfo = this.dbInsert(map.identity.userOrganizationInfo, info);
+                    var insertProfile = this.dbInsert(map.identity.userProfile, profile, { accountId: 1 });
+                    var insertInfo = this.dbInsert(map.identity.userOrganizationInfo, info, { accountId: 1 });
 
                     Promise.all([insertProfile, insertInfo])
                         .then(results => {
