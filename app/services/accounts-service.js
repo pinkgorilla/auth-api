@@ -5,6 +5,7 @@ var Account = require('capital-models').identity.Account;
 var UserProfile = require('capital-models').identity.UserProfile;
 var UserOrganizationInfo = require('capital-models').identity.UserOrganizationInfo;
 var map = require('capital-models').map;
+var ObjectId = require('mongodb').ObjectId;
 
 module.exports = class AccountService extends Service {
   constructor() {
@@ -16,8 +17,27 @@ module.exports = class AccountService extends Service {
     var collection = request.db.collection(this.collectionName);
     collection.find().toArray()
       .then(docs => {
-        response.locals.data = docs;
-        next();
+        var promises = [];
+        for (var doc of docs) {
+          promises.push(new Promise(function (resolve, reject) {
+            var account = doc;
+            var loadProfile = request.single(map.identity.userProfile, { accountId: new ObjectId(account._id) });
+            var loadInfo = request.single(map.identity.userOrganizationInfo, { accountId: new ObjectId(account._id) });
+
+            Promise.all([loadProfile, loadInfo])
+              .then(results => {
+                resolve(Object.assign({}, results[0], results[1], account));
+              })
+              .catch(e => reject(e))
+          }));
+        }
+
+        Promise.all(promises)
+          .then(results => {
+            response.locals.data = results;
+            next();
+          })
+          .catch(e => next(e));
       })
       .catch(e => next(e));
   }
@@ -28,8 +48,15 @@ module.exports = class AccountService extends Service {
 
     request.single(this.collectionName, query)
       .then(doc => {
-        response.locals.data = doc;
-        next();
+
+        var loadProfile = request.single(map.identity.userProfile, { accountId: new ObjectId(doc._id) });
+        var loadInfo = request.single(map.identity.userOrganizationInfo, { accountId: new ObjectId(doc._id) });
+        Promise.all([loadProfile, loadInfo])
+          .then(results => {
+            response.locals.data = Object.assign({}, results[0], results[1], doc);
+            next();
+          })
+          .catch(e => next(e));
       })
       .catch(e => next(e));
   }
