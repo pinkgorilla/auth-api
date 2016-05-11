@@ -3,6 +3,7 @@
 var map = require('capital-models').map;
 var ObjectId = require('mongodb').ObjectId;
 var Manager = require('./manager');
+var sha1 = require('sha1');
 
 module.exports = class AccountManager extends Manager {
 
@@ -41,7 +42,26 @@ module.exports = class AccountManager extends Manager {
 
         }.bind(this));
     }
-    
+
+    authenticate(username, password) {
+        return new Promise(function (resolve, reject) {
+
+            var query = { username: username, password: sha1(password) };
+            // var query = { username: username };
+
+            this.dbSingle(map.identity.account, query)
+                .then(account => {
+                    if (account)
+                        resolve(true);
+                    else
+                        resolve(false);
+                })
+                .catch(e => {
+                    reject(e);
+                });
+        }.bind(this));
+    }
+
     get(username) {
         return new Promise(function (resolve, reject) {
 
@@ -60,13 +80,12 @@ module.exports = class AccountManager extends Manager {
                 })
                 .catch(e => reject(e));
         }.bind(this));
-    } 
-    
+    }
+
     create(account, profile, info) {
         return new Promise(function (resolve, reject) {
-
-            ;
             profile.dob = profile.dob ? new Date(profile.dob) : new Date();
+            account.password = sha1(account.password);
             account.stamp('actor', 'agent');
             profile.stamp('actor', 'agent');
             info.stamp('actor', 'agent');
