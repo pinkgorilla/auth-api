@@ -30,10 +30,13 @@ module.exports = class AuthenticationService extends Service {
                         .catch(e => next(e));
                 }
                 else {
-                    reponse.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
-                    next(); 
+                    response.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
+                    next();
                 }
             })
-            .catch(e => next(e));
+            .catch(e => {
+                response.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
+                next();
+            });
     }
 }

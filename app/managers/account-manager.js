@@ -45,11 +45,10 @@ module.exports = class AccountManager extends Manager {
 
     authenticate(username, password) {
         return new Promise(function (resolve, reject) {
-
             var query = { username: username, password: sha1(password) };
             // var query = { username: username };
 
-            this.dbSingle(map.identity.account, query)
+            this.dbSingleOrDefault(map.identity.account, query)
                 .then(account => {
                     if (account)
                         resolve(true);
@@ -74,6 +73,7 @@ module.exports = class AccountManager extends Manager {
                     Promise.all([loadProfile, loadInfo])
                         .then(results => {
                             var data = Object.assign({}, results[1], results[0], account);
+                            data.password = '';
                             resolve(data);
                         })
                         .catch(e => reject(e));
@@ -86,6 +86,7 @@ module.exports = class AccountManager extends Manager {
         return new Promise(function (resolve, reject) {
             profile.dob = profile.dob ? new Date(profile.dob) : new Date();
             account.password = sha1(account.password);
+            info.initial = (info.initial || '').toUpperCase();
             account.stamp('actor', 'agent');
             profile.stamp('actor', 'agent');
             info.stamp('actor', 'agent');
@@ -112,6 +113,9 @@ module.exports = class AccountManager extends Manager {
     update(account, profile, info) {
 
         var query = { 'username': account.username };
+        if (account.password && account.password.length > 0)
+            account.password = sha1(account.password);
+            
         return new Promise(function (resolve, reject) {
 
             this.dbUpdate(map.identity.account, query, account, true)
@@ -126,6 +130,7 @@ module.exports = class AccountManager extends Manager {
                     if (info && info.accountId == accountResult._id) {
                         delete (info._id);
                         info.accountId = accountResult._id;
+                        info.initial = (info.initial || '').toUpperCase();
                         updateInfo = this.dbUpdate(map.identity.userOrganizationInfo, { accountId: accountResult._id }, info, true)
                     }
 

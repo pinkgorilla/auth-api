@@ -47,12 +47,11 @@ mongoclient.connect(config.connectionString, function (error, db) {
 
         app.use(function (error, request, response, next) {
             var apiVersion = response.locals.apiVersion;
-            var data = response.locals.data;
-            console.log(error);
+            var data = response.locals.data; 
             response.json({
                 'apiVersion': apiVersion,
                 'error': {
-                    message: error.message
+                    message: error.message || error
                 }
             });
         });

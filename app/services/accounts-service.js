@@ -68,7 +68,6 @@ module.exports = class AccountService extends Service {
   }
 
   delete(request, response, next) {
-    console.log('delete:called');
     response.send('');
   }
 
