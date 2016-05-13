@@ -18,7 +18,7 @@
   "homepage": "https://github.com/pinkgorilla/auth-api#readme",
   "dependencies": {
     "body-parser": "^1.15.0",
-    "capital-auth": "^1.0.1",
+    "capital-auth": "^1.0.5",
     "capital-models": "^1.0.0",
     "express": "^4.13.4",
     "jsonwebtoken": "^6.1.0",
