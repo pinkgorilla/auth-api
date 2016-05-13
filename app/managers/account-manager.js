@@ -45,15 +45,32 @@ module.exports = class AccountManager extends Manager {
 
     authenticate(username, password) {
         return new Promise(function (resolve, reject) {
-            var query = { username: username, password: sha1(password) };
+            var query = { username: username, password: sha1(password || '') };
             // var query = { username: username };
 
             this.dbSingleOrDefault(map.identity.account, query)
                 .then(account => {
-                    if (account)
-                        resolve(true);
+                    if (account) {
+                        var loadProfile = this.dbSingle(map.identity.userProfile, { accountId: account._id });
+                        var loadInfo = this.dbSingle(map.identity.userOrganizationInfo, { accountId: account._id });
+                        Promise.all([loadProfile, loadInfo])
+                            .then(results => {
+                                var profile = results[0];
+                                var info = results[1];
+                                var data = {
+                                    id:account._id,
+                                    username: account.username,
+                                    name: profile.name,
+                                    nik: info.nik,
+                                    initial: info.initial,
+                                    department: info.department
+                                }; 
+                                resolve(data);
+                            })
+                            .catch(e => reject(e));
+                    }
                     else
-                        resolve(false);
+                        reject("invalid username or password");
                 })
                 .catch(e => {
                     reject(e);
@@ -115,7 +132,7 @@ module.exports = class AccountManager extends Manager {
         var query = { 'username': account.username };
         if (account.password && account.password.length > 0)
             account.password = sha1(account.password);
-            
+
         return new Promise(function (resolve, reject) {
 
             this.dbUpdate(map.identity.account, query, account, true)

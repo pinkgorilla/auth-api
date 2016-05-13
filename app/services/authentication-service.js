@@ -19,21 +19,16 @@ module.exports = class AuthenticationService extends Service {
         var accountManager = new AccountManager(request.db);
         accountManager.authenticate(username, password)
             .then(result => {
-                if (result === true) {
-                    accountManager.get(username)
-                        .then(user => {
-                            var tokenOption = {};//{ expiresInMinutes: 1440 };
-                            var token = jwt.sign(user, config.secret, tokenOption);
-                            response.locals.data = { token: token }
-                            next();
-                        })
-                        .catch(e => next(e));
+
+                var tokenOption = {};//{ expiresInMinutes: 1440 };
+                var token = jwt.sign(result, config.secret, tokenOption);
+                response.locals.data = {
+                    token: token,
+                    user: result
                 }
-                else { 
-                    next("Authentication failed. Invalid username or password");
-                }
+                next();
             })
-            .catch(e => { 
+            .catch(e => {
                 next("Authentication failed. Invalid username or password");
             });
     }
