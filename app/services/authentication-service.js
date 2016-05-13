@@ -24,19 +24,17 @@ module.exports = class AuthenticationService extends Service {
                         .then(user => {
                             var tokenOption = {};//{ expiresInMinutes: 1440 };
                             var token = jwt.sign(user, config.secret, tokenOption);
-                            response.locals.data = { success: true, token: token }
+                            response.locals.data = { token: token }
                             next();
                         })
                         .catch(e => next(e));
                 }
-                else {
-                    response.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
-                    next();
+                else { 
+                    next("Authentication failed. Invalid username or password");
                 }
             })
-            .catch(e => {
-                response.locals.data = { success: false, message: "Authentication failed. Invalid username or password" };
-                next();
+            .catch(e => { 
+                next("Authentication failed. Invalid username or password");
             });
     }
 }
