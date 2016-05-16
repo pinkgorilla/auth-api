@@ -15,8 +15,7 @@ mongoclient.connect(config.connectionString, function (error, db) {
 
         var accountsrouter = require('./app/routers/accounts-router');
         var authenticationrouter = require('./app/routers/authentication-router');
-        var cors = require('./app/middlewares/cors'); 
-        var jwtauth = require('capital-auth');
+        var cors = require('capital-auth').cors;
 
         app.use(bodyparser.urlencoded({ extended: false }));
         app.use(bodyparser.json());
@@ -26,7 +25,6 @@ mongoclient.connect(config.connectionString, function (error, db) {
             request.db = db;
             next();
         });
-        app.use(jwtauth.filter(config.secret));
 
         app.get('/', function (req, res) {
             res.send('Hello! The API is at http://localhost:' + port + '/api');
