@@ -130,7 +130,7 @@ module.exports = class AccountManager extends Manager {
 
     update(account, profile, info) {
 
-        var query = { 'username': account.username };
+        var query = { 'username': account.username.toLowerCase() };
         if (account.password && account.password.length > 0)
             account.password = sha1(account.password);
 

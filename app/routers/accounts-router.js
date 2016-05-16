@@ -10,8 +10,8 @@ router.use(service.version.bind(service));
 
 
 // Routes.
+// router.use(jwtauth.authorize(config.secret));
 router.post('/', service.create.bind(service));
-router.use(jwtauth.authorize(config.secret));
 router.get('/', service.all.bind(service));
 router.get('/:username', service.get.bind(service));
 router.put('/:username', service.update.bind(service));
