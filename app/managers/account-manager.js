@@ -45,7 +45,7 @@ module.exports = class AccountManager extends Manager {
 
     authenticate(username, password) {
         return new Promise(function (resolve, reject) {
-            var query = { username: username, password: sha1(password || '') };
+            var query = { username: username.toLowerCase(), password: sha1(password || '') };
             // var query = { username: username };
 
             this.dbSingleOrDefault(map.identity.account, query)
@@ -102,6 +102,7 @@ module.exports = class AccountManager extends Manager {
     create(account, profile, info) {
         return new Promise(function (resolve, reject) {
             profile.dob = profile.dob ? new Date(profile.dob) : new Date();
+            account.username = account.username.toLowerCase()
             account.password = sha1(account.password);
             info.initial = (info.initial || '').toUpperCase();
             account.stamp('actor', 'agent');
