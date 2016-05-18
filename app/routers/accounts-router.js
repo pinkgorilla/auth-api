@@ -1,16 +1,16 @@
-var Service = require('../services/accounts-service');
 var express = require('express');
 var router = express.Router();
-var jwtauth = require('capital-auth');
-var config = require('../../config');
-var service = new Service();
+
+var AccountsService = require('../services/accounts-service'); 
+var service = new AccountsService();
+
+var jwt = require('mean-toolkit').passport.jwt; 
 
 // Middlewares. 
 router.use(service.version.bind(service));
 
-
+router.all('*', jwt.authenticate({ session: false }));
 // Routes.
-// router.use(jwtauth.authorize(config.secret));
 router.post('/', service.create.bind(service));
 router.get('/', service.all.bind(service));
 router.get('/:username', service.get.bind(service));

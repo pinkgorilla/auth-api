@@ -2,12 +2,12 @@
 
 var map = require('capital-models').map;
 var ObjectId = require('mongodb').ObjectId;
-var Manager = require('./manager');
+var Manager = require('mean-toolkit').Manager;
 var sha1 = require('sha1');
 
 module.exports = class AccountManager extends Manager {
 
-    constructor(db) {
+    constructor(db) { 
         super(db);
     }
 
@@ -45,8 +45,7 @@ module.exports = class AccountManager extends Manager {
 
     authenticate(username, password) {
         return new Promise(function (resolve, reject) {
-            var query = { username: username.toLowerCase(), password: sha1(password || '') };
-            // var query = { username: username };
+            var query = { username: username.toLowerCase(), password: sha1(password || '') }; 
 
             this.dbSingleOrDefault(map.identity.account, query)
                 .then(account => {

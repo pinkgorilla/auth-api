@@ -1,38 +1,44 @@
 'use strict'
 
-var Service = require('./service');
+var Service = require('mean-toolkit').Service;
 var Account = require('capital-models').identity.Account;
 var UserProfile = require('capital-models').identity.UserProfile;
 var UserOrganizationInfo = require('capital-models').identity.UserOrganizationInfo;
 var map = require('capital-models').map;
 var ObjectId = require('mongodb').ObjectId;
 var AccountManager = require('../managers/account-manager');
+var config = require('../../config');
 
 module.exports = class AccountService extends Service {
   constructor() {
     super("1.0.0");
-    this.collectionName = "accounts";
   }
 
   all(request, response, next) {
-
-    var accountManager = new AccountManager(request.db);
-    accountManager.read()
-      .then(result => {
-        response.locals.data = result;
-        next();
+    this.connectDb(config.connectionString)
+      .then(db => {
+        var accountManager = new AccountManager(db);
+        accountManager.read()
+          .then(result => {
+            response.locals.data = result;
+            next();
+          })
+          .catch(e => next(e));
       })
       .catch(e => next(e));
   }
 
   get(request, response, next) {
-    var username = request.params.username; 
-    
-    var accountManager = new AccountManager(request.db);
-    accountManager.get(username)
-      .then(result => {
-        response.locals.data = result;
-        next();
+    var username = request.params.username;
+    this.connectDb(config.connectionString)
+      .then(db => {
+        var accountManager = new AccountManager(db);
+        accountManager.get(username)
+          .then(result => {
+            response.locals.data = result;
+            next();
+          })
+          .catch(e => next(e));
       })
       .catch(e => next(e));
   }
@@ -43,11 +49,15 @@ module.exports = class AccountService extends Service {
     var profile = Object.assign(new UserProfile(), body.profile);
     var info = Object.assign(new UserOrganizationInfo(), body.info);
 
-    var accountManager = new AccountManager(request.db);
-    accountManager.create(account, profile, info)
-      .then(result => {
-        response.locals.data = result;
-        next();
+    this.connectDb(config.connectionString)
+      .then(db => {
+        var accountManager = new AccountManager(db);
+        accountManager.create(account, profile, info)
+          .then(result => {
+            response.locals.data = result;
+            next();
+          })
+          .catch(e => next(e));
       })
       .catch(e => next(e));
   }
@@ -58,11 +68,15 @@ module.exports = class AccountService extends Service {
     var profile = Object.assign(new UserProfile(), body.profile);
     var info = Object.assign(new UserOrganizationInfo(), body.info);
 
-    var accountManager = new AccountManager(request.db);
-    accountManager.update(account, profile, info)
-      .then(result => {
-        response.locals.data = result;
-        next();
+    this.connectDb(config.connectionString)
+      .then(db => {
+        var accountManager = new AccountManager(db);
+        accountManager.update(account, profile, info)
+          .then(result => {
+            response.locals.data = result;
+            next();
+          })
+          .catch(e => next(e));
       })
       .catch(e => next(e));
   }
