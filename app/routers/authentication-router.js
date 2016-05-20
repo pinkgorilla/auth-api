@@ -23,7 +23,7 @@ router.use(authService.version.bind(authService));
 // Routes. 
 router.post('/', passportLocal.authenticate({ session: false }), function (request, response, next) {
     var user = request.user;
-    var tokenOption = { expiresIn: 1440 };
+    var tokenOption = { expiresIn: 86400 };
 
     var token = jwt.sign(user, config.secret, tokenOption);
     response.locals.data = {
