@@ -4,7 +4,7 @@ var router = express.Router();
 var jwt = require('jsonwebtoken');
 var config = require('../../config');
 
-var authService = new (require('../services/authentication-service'))(); 
+var authService = new (require('../services/authentication-service'))();
 var passportLocal = require('mean-toolkit').passport.local;
 
 passportLocal.strategy(function (username, password, done) {
@@ -25,7 +25,7 @@ router.post('/', passportLocal.authenticate({ session: false }), function (reque
     var user = request.user;
     var tokenOption = { expiresIn: 86400 };
 
-    var token = jwt.sign(user, config.secret, tokenOption);
+    var token = jwt.sign({ user: user }, config.secret, tokenOption);
     response.locals.data = {
         token: token,
         user: user
