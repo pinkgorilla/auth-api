@@ -5,9 +5,13 @@ var ObjectId = require('mongodb').ObjectId;
 var Manager = require('mean-toolkit').Manager;
 var sha1 = require('sha1');
 
+var Account = require('capital-models').identity.Account;
+var UserOrganizationInfo = require('capital-models').identity.UserOrganizationInfo;
+var UserProfile = require('capital-models').identity.UserProfile;
+
 module.exports = class AccountManager extends Manager {
 
-    constructor(db) { 
+    constructor(db) {
         super(db);
     }
 
@@ -45,7 +49,7 @@ module.exports = class AccountManager extends Manager {
 
     authenticate(username, password) {
         return new Promise(function (resolve, reject) {
-            var query = { username: username.toLowerCase(), password: sha1(password || '') }; 
+            var query = { username: username.toLowerCase(), password: sha1(password || '') };
 
             this.dbSingleOrDefault(map.identity.account, query)
                 .then(account => {
@@ -57,13 +61,13 @@ module.exports = class AccountManager extends Manager {
                                 var profile = results[0];
                                 var info = results[1];
                                 var data = {
-                                    id:account._id,
+                                    id: account._id,
                                     username: account.username,
                                     name: profile.name,
                                     nik: info.nik,
                                     initial: info.initial,
                                     department: info.department
-                                }; 
+                                };
                                 resolve(data);
                             })
                             .catch(e => reject(e));
@@ -98,7 +102,11 @@ module.exports = class AccountManager extends Manager {
         }.bind(this));
     }
 
-    create(account, profile, info) {
+    create(body) {
+        var data = this._getData(body)
+        var account = data.account;
+        var profile = data.profile;
+        var info = data.info;
         return new Promise(function (resolve, reject) {
             profile.dob = profile.dob ? new Date(profile.dob) : new Date();
             account.username = account.username.toLowerCase()
@@ -127,8 +135,12 @@ module.exports = class AccountManager extends Manager {
         }.bind(this));
     }
 
-    update(account, profile, info) {
-
+    update(body) {
+        var data = this._getData(body)
+        var account = data.account;
+        var profile = data.profile;
+        var info = data.info;
+        
         var query = { 'username': account.username.toLowerCase() };
         if (account.password && account.password.length > 0)
             account.password = sha1(account.password);
@@ -161,5 +173,50 @@ module.exports = class AccountManager extends Manager {
                 })
                 .catch(e => reject(e));
         }.bind(this));
+    }
+
+
+
+
+
+    _getData(body) {
+        var data = {
+            account: this._getAccount(body),
+            profile: this._getUserProfile(body),
+            info: this._getUserOrganizationInfo(body)
+        };
+
+        return data;
+    }
+    _getAccount(body) {
+        return new Account(body);
+        // return {
+        //     _id: body._id,
+        //     username: body.username,
+        //     password: body.password,
+        //     email: body.email,
+        //     locked: body.locked,
+        //     confirmed: body.confirmed,
+        //     roles: [],
+        //     _stamp: body._stamp
+        // }
+    }
+    _getUserProfile(body) {
+        return new UserProfile(body);
+        // return {
+        //     accountId: body._id || body.accountId,
+        //     name: body.name,
+        //     dob: body.dob,
+        //     gender: body.gender
+        // };
+    }
+    _getUserOrganizationInfo(body) {
+        return new UserOrganizationInfo(body);
+        // return {
+        //     accountId: body._id || body.accountId,
+        //     nik: body.nik,
+        //     initial: body.initial,
+        //     department: body.department
+        // };
     }
 }

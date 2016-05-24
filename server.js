@@ -14,7 +14,7 @@ app.use(passport.initialize());
 var config = require('./config');
 var jwt = require('mean-toolkit').passport.jwt;
 jwt.strategy(function (payload, done) {
-    return done(null, payload);
+    return done(null, payload.user);
 }, config.secret);
 
 var morgan = require('morgan');
@@ -25,6 +25,9 @@ app.use('/authenticate', authenticationRouter);
 
 var accountsRouter = require('./app/routers/accounts-router');
 app.use('/accounts', accountsRouter);
+
+var meRouter = require('./app/routers/me-router');
+app.use('/me', meRouter);
 
 app.use(toolkit.middlewares.resultFormatter);
 app.use(toolkit.middlewares.errorFormatter);

@@ -13,8 +13,9 @@ router.all('*', jwt.authenticate({ session: false }));
 // Routes.
 router.post('/', service.create.bind(service));
 router.get('/', service.all.bind(service));
+router.put('/', service.update.bind(service)); 
+
 router.get('/:username', service.get.bind(service));
-router.put('/:username', service.update.bind(service));
 router.delete('/:username', service.delete.bind(service));
 
 module.exports = router;
