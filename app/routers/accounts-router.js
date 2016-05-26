@@ -9,7 +9,7 @@ var jwt = require('mean-toolkit').passport.jwt;
 // Middlewares. 
 router.use(service.version.bind(service));
 
-// router.all('*', jwt.authenticate({ session: false }));
+router.all('*', jwt.authenticate({ session: false }));
 // Routes.
 router.post('/', service.create.bind(service));
 router.get('/', service.all.bind(service));
