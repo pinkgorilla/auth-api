@@ -22,7 +22,7 @@
     "capital-models": "^1.0.11",
     "express": "^4.13.4",
     "jsonwebtoken": "^6.1.0",
-    "mean-toolkit": "^1.0.2",
+    "mean-toolkit": "^1.0.3",
     "mongo-factory": "^1.0.0",
     "mongodb": "^2.1.20",
     "morgan": "^1.7.0",
