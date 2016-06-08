@@ -35,4 +35,7 @@ factory.getConnection(config.connectionString)
         var port = process.env.PORT || 8080;
         app.listen(port);
         console.log('Magic happens at http://localhost:' + port);
-    });
+    })
+    .catch(e => {
+        console.log(e);
+    })

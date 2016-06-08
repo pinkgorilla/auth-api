@@ -1,6 +1,6 @@
 {
   "name": "authentication-api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "authentication service with node.js & express",
   "main": "server.js",
   "scripts": {
@@ -18,9 +18,8 @@
   },
   "homepage": "https://github.com/pinkgorilla/auth-api#readme",
   "dependencies": {
-    "authentication-mod": "^1.0.0",
+    "authentication-mod": "^1.0.1",
     "body-parser": "^1.15.0",
-    "capital-models": "^1.0.12",
     "express": "^4.13.4",
     "jsonwebtoken": "^6.1.0",
     "mean-toolkit": "^1.0.6",
